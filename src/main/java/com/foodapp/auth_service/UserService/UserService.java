@@ -1,5 +1,6 @@
 package com.foodapp.auth_service.UserService;
 
+import com.foodapp.auth_service.model.Role;
 import com.foodapp.auth_service.model.User;
 import com.foodapp.auth_service.UserRepository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,12 +12,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // Constructor Of UserService
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User save(User user) {
+    public User createUser(String username, String rawPassword, Role role) {
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        User user = new User(username, encodedPassword, role);
         return userRepository.save(user);
     }
 
