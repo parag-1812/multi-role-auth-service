@@ -1,6 +1,7 @@
 package com.foodapp.auth_service.security;
 
 import com.foodapp.auth_service.security.jwt.JwtAuthFilter;
+import com.foodapp.auth_service.security.jwt.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,8 +14,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
+    private final JwtUtil jwtUtil;
+
+    public SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .sessionManagement(session ->
@@ -24,11 +31,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/auth/signup",
-                                "/auth/login",
-                                "/h2-console/**"
-                        ).permitAll()
+                        .requestMatchers("/auth/signup", "/auth/login").permitAll()
+
+                        .requestMatchers("/h2-console/**").permitAll()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/kitchen/**").hasRole("KITCHEN")
@@ -38,7 +43,7 @@ public class SecurityConfig {
                 )
 
                 .addFilterBefore(
-                        new JwtAuthFilter(),
+                        new JwtAuthFilter(jwtUtil),
                         UsernamePasswordAuthenticationFilter.class
                 )
 

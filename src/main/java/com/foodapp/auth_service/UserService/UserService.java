@@ -1,5 +1,7 @@
 package com.foodapp.auth_service.UserService;
 
+import com.foodapp.auth_service.Exceptions.InvalidCredentialsException;
+import com.foodapp.auth_service.Exceptions.UserNotFoundException;
 import com.foodapp.auth_service.model.Role;
 import com.foodapp.auth_service.model.User;
 import com.foodapp.auth_service.UserRepository.UserRepository;
@@ -25,11 +27,12 @@ public class UserService {
     }
 
     public User authenticate(String username, String rawPassword) {
+
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidCredentialsException("Invalid credentials");
         }
 
         return user;

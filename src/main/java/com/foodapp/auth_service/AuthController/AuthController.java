@@ -4,10 +4,9 @@ import com.foodapp.auth_service.DTO.AuthResponse;
 import com.foodapp.auth_service.DTO.JwtResponse;
 import com.foodapp.auth_service.DTO.LoginRequest;
 import com.foodapp.auth_service.DTO.SignupRequest;
-import com.foodapp.auth_service.model.User;
 import com.foodapp.auth_service.UserService.UserService;
+import com.foodapp.auth_service.model.User;
 import com.foodapp.auth_service.security.jwt.JwtUtil;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/signup")
@@ -33,25 +34,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            User user = userService.authenticate(
-                    request.getUsername(),
-                    request.getPassword()
-            );
 
-            String token = JwtUtil.generateToken(
-                    user.getUsername(),
-                    user.getRole().name()
-            );
+        User user = userService.authenticate(
+                request.getUsername(),
+                request.getPassword()
+        );
 
-            return ResponseEntity.ok(new JwtResponse(token));
+        String token = jwtUtil.generateToken(
+                user.getUsername(),
+                user.getRole().name()
+        );
 
-        } catch (RuntimeException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(ex.getMessage()));
-        }
+        return ResponseEntity.ok(new JwtResponse(token));
     }
 
 }
-
