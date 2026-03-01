@@ -48,17 +48,4 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponse(token));
     }
 
-    @PostMapping("/orders")
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody CreateOrderRequest request) {
-
-        // TODO: Replace this temporary implementation with actual business logic
-
-        OrderResponse response = new OrderResponse();
-        response.setOrderId(999L);
-        response.setStatus("TEMP_SUCCESS");
-        response.setMessage("This is a temporary response for commit purpose.");
-
-        return ResponseEntity.ok(response);
-    }
-
 }
