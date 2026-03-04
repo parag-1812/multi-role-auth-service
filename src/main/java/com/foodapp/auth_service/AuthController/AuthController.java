@@ -22,15 +22,7 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/signup")
-    public AuthResponse signup(@RequestBody SignupRequest request) {
-        userService.createUser(
-                request.getUsername(),
-                request.getPassword(),
-                request.getRole()
-        );
-        return new AuthResponse("User registered successfully");
-    }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
