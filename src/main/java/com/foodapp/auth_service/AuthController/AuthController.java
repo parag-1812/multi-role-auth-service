@@ -27,25 +27,8 @@ public class AuthController {
         userService.createUser(
                 request.getUsername(),
                 request.getPassword(),
-                request.getRole()
-        );
+                request.getRole());
         return new AuthResponse("User registered successfully");
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-
-        User user = userService.authenticate(
-                request.getUsername(),
-                request.getPassword()
-        );
-
-        String token = jwtUtil.generateToken(
-                user.getUsername(),
-                user.getRole().name()
-        );
-
-        return ResponseEntity.ok(new JwtResponse(token));
     }
 
 }
