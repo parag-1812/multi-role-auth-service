@@ -1,25 +1,36 @@
 package com.foodapp.auth_service.security.jwt;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 
+/**
+ * Issues and validates JWTs using RS256 (asymmetric).
+ * <p>
+ * The auth-service is the sole token issuer: it signs with the RSA private key.
+ * Every other service holds only the public key and can verify but never mint
+ * tokens. In production, override {@code jwt.private-key}/{@code jwt.public-key}
+ * to point at mounted secrets.
+ */
 @Component
 public class JwtUtil {
 
-    private final Key key;
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
     private final long expirationTime;
 
     public JwtUtil(
-            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.private-key}") Resource privateKeyResource,
+            @Value("${jwt.public-key}") Resource publicKeyResource,
             @Value("${jwt.expiration}") long expirationTime
     ) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.privateKey = PemKeyLoader.readPrivateKey(privateKeyResource);
+        this.publicKey = PemKeyLoader.readPublicKey(publicKeyResource);
         this.expirationTime = expirationTime;
     }
 
@@ -29,7 +40,7 @@ public class JwtUtil {
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
 
@@ -52,7 +63,7 @@ public class JwtUtil {
 
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

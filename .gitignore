@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secrets — never commit the JWT signing (private) key to a public repo ###
+### The public key IS committed (verifiers need it); regenerate the private ###
+### key locally per src/main/resources/keys/README.md. ###
+src/main/resources/keys/jwt-private.pem
+jwt-private.pem
