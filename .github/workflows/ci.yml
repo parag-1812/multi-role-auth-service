@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # The private signing key is git-ignored (never committed). Generate a
+      # throwaway dev keypair so the Spring context can boot during tests.
+      - name: Generate dev JWT keypair
+        run: |
+          mkdir -p src/main/resources/keys
+          openssl genpkey -algorithm RSA -out src/main/resources/keys/jwt-private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in src/main/resources/keys/jwt-private.pem -out src/main/resources/keys/jwt-public.pem
+      - name: Build and test
+        run: |
+          chmod +x ./mvnw
+          ./mvnw -B -ntp test
